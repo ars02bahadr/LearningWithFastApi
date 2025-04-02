@@ -10,8 +10,11 @@ class BaseResponseSchema(BaseModel):
     status_code: int
     data: Optional[Any] = None
 
+from pydantic import Field, constr
+
 class UserTypeBaseSchema(BaseSchema):
-    name: str
+    id: int = Field(gt=0, description="ID must be greater than 0")
+    name: constr(min_length=1, max_length=50, strip_whitespace=True)
 
 class UserTypeResponseSchema(UserTypeBaseSchema):
     created_at: datetime.datetime
