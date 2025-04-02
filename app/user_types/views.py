@@ -1,6 +1,15 @@
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from . import models, schemas
+
+def validate_user_type_name(name: str):
+    if not name or len(name.strip()) == 0:
+        raise HTTPException(status_code=400, detail="Kullanıcı tipi adı boş olamaz")
+    if len(name) > 50:
+        raise HTTPException(status_code=400, detail="Kullanıcı tipi adı 50 karakterden uzun olamaz")
+    if not name.replace(" ", "").isalnum():
+        raise HTTPException(status_code=400, detail="Kullanıcı tipi adı sadece harf, rakam ve boşluk içerebilir")
 
 def get_all_user_types(db: Session):
     try:
@@ -28,6 +37,14 @@ def get_user_type_by_id(user_type_id: int, db: Session):
 
 def create_user_type(user_type: schemas.UserTypeCreateSchema, db: Session):
     try:
+        # Validate user type name
+        validate_user_type_name(user_type.name)
+        
+        # Check if user type with same name exists
+        existing_user_type = db.query(models.UserTypeDB).filter(models.UserTypeDB.name == user_type.name).first()
+        if existing_user_type:
+            raise HTTPException(status_code=400, detail="Bu isimde bir kullanıcı tipi zaten mevcut")
+
         db_user_type = models.UserTypeDB(name=user_type.name)
         db.add(db_user_type)
         db.commit()
@@ -42,9 +59,21 @@ def create_user_type(user_type: schemas.UserTypeCreateSchema, db: Session):
 
 def update_user_type(user_type: schemas.UserTypeUpdateSchema, db: Session):
     try:
+        # Validate user type name
+        validate_user_type_name(user_type.name)
+        
         db_user_type = db.query(models.UserTypeDB).filter(models.UserTypeDB.id == user_type.id).first()
         if db_user_type is None:
-            raise HTTPException(status_code=404, detail="User type not found")
+            raise HTTPException(status_code=404, detail="Kullanıcı tipi bulunamadı")
+            
+        # Check if another user type with same name exists
+        existing_user_type = db.query(models.UserTypeDB).filter(
+            models.UserTypeDB.name == user_type.name,
+            models.UserTypeDB.id != user_type.id
+        ).first()
+        if existing_user_type:
+            raise HTTPException(status_code=400, detail="Bu isimde başka bir kullanıcı tipi zaten mevcut")
+
         db_user_type.name = user_type.name
         db.commit()
         db.refresh(db_user_type)
@@ -69,4 +98,4 @@ def delete_user_type(user_type: schemas.UserTypeDeleteSchema, db: Session):
             data=schemas.UserTypeResponseSchema.from_orm(db_user_type)
         )
     finally:
-        db.close() 
+        db.close()
