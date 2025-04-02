@@ -11,6 +11,8 @@ def validate_user_type_name(name: str):
     if not name.replace(" ", "").isalnum():
         raise HTTPException(status_code=400, detail="Kullanıcı tipi adı sadece harf, rakam ve boşluk içerebilir")
 
+
+
 def get_all_user_types(db: Session):
     try:
         user_types = db.query(models.UserTypeDB).all()
