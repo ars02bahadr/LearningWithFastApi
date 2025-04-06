@@ -11,3 +11,6 @@ app.include_router(user_types_router, prefix="/user-types", tags=["user-types"])
 app.include_router(user_roles_router, prefix="/user-roles", tags=["user-roles"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
+
+
+

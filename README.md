@@ -66,7 +66,7 @@ pip install -r requirements.txt
 
 4. Uygulamayı çalıştırın:
 ```bash
-uvicorn app.main:app --reload
+uvicorn main:app --reload
 ```
 
 ## API Endpoint'leri
